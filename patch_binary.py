@@ -8,6 +8,40 @@ BUILDS = {
     "x86_64": (0x1000007, "c1daf45f3c33e4ae3082aaef080b1979469dfa9a168f616bf74d8e5d7ceeccff"),
 }
 
+# Existing NSApplicationMain import stubs, verified in each supported binary.
+# Direct distribution uses standard AppKit startup instead of the legacy
+# Mac App Store receipt wrapper. No receipt or Apple identity is synthesized.
+DESKTOP_ENTRIES = {
+    "arm64": (0x1CCFBC, 0x1413C14, bytes.fromhex("904a00b010c645f900021fd6")),
+    "x86_64": (0x1DB5EC, 0x184AF46, bytes.fromhex("ff2584ec8200")),
+}
+
+
+def select_desktop_entry(data, original_entry, appkit_entry, expected_stub):
+    b = bytearray(data)
+    if len(b) < 32 or appkit_entry < 32 or b[appkit_entry:appkit_entry + len(expected_stub)] != expected_stub:
+        raise ValueError("Unexpected AppKit entry stub")
+    count, size = struct.unpack_from("<II", b, 16)
+    end, pos = 32 + size, 32
+    if end > len(b):
+        raise ValueError("Invalid load-command table")
+    entries = []
+    for _ in range(count):
+        if pos + 8 > end:
+            raise ValueError("Truncated load command")
+        cmd, cmdsize = struct.unpack_from("<II", b, pos)
+        if cmdsize < 8 or pos + cmdsize > end:
+            raise ValueError("Invalid load command")
+        if cmd == 0x80000028:
+            if cmdsize != 24 or struct.unpack_from("<Q", b, pos + 8)[0] != original_entry:
+                raise ValueError("Unexpected original application entry")
+            entries.append(pos + 8)
+        pos += cmdsize
+    if pos != end or len(entries) != 1:
+        raise ValueError("Expected exactly one LC_MAIN")
+    struct.pack_into("<Q", b, entries[0], appkit_entry)
+    return bytes(b)
+
 
 def add_load_command(data: bytes, cpu: int) -> bytes:
     b = bytearray(data)
@@ -53,4 +87,5 @@ def patch(path: Path, arch: str) -> None:
     original = path.read_bytes()
     if hashlib.sha256(original).hexdigest() != digest:
         raise ValueError("Unsupported GSE executable. Only the documented 4.4 (52) build is supported.")
-    path.write_bytes(add_load_command(original, cpu))
+    desktop = select_desktop_entry(original, *DESKTOP_ENTRIES[arch])
+    path.write_bytes(add_load_command(desktop, cpu))

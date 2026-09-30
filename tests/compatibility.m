@@ -11,6 +11,13 @@ extern char testEPGReturnAddress;
 @implementation ActionOwner
 -(void)doubleClickedRow:(id)sender {}
 @end
+static int receiptRequests;
+@interface DistributionDelegate:NSObject
+-(void)strategicPlace1;
+@end
+@implementation DistributionDelegate
+-(void)strategicPlace1 { receiptRequests++; }
+@end
 int main(int argc,char **argv) { @autoreleasepool {
  void *lib=argc>1?dlopen(argv[1],RTLD_NOW):NULL;
  void (*install)(uintptr_t)=lib?dlsym(lib,"GSEInstallCompatibility"):NULL;
@@ -38,5 +45,18 @@ int main(int argc,char **argv) { @autoreleasepool {
  CHECK(threw,"other invalid indices still raise an exception");
  threw=NO; @try {testEPGPop(empty,@selector(removeObjectAtIndex:));} @catch(NSException *e){threw=YES;}
  CHECK(!threw,"real Objective-C dispatch guards the exact native return address");
+ BOOL (*direct)(Class,uintptr_t)=lib?dlsym(lib,"GSEInstallDirectDistribution"):NULL;
+ Class delegate=[DistributionDelegate class];
+ uintptr_t original=(uintptr_t)class_getMethodImplementation(delegate,@selector(strategicPlace1));
+ CHECK(direct!=NULL,"direct distribution installer is available");
+ if(direct) {
+  CHECK(!direct([NSObject class],original),"missing receipt method is rejected");
+  CHECK(!direct(delegate,original+1),"unexpected receipt implementation is rejected");
+  [[DistributionDelegate new] strategicPlace1];
+  CHECK(receiptRequests==1,"rejected patch leaves original method intact");
+  CHECK(direct(delegate,original),"known delayed receipt callback is replaced");
+  [[DistributionDelegate new] strategicPlace1];
+  CHECK(receiptRequests==1,"direct distribution queues no receipt check");
+ }
  return failures?1:0;
 }}

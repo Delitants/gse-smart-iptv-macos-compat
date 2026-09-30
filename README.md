@@ -8,22 +8,14 @@ Download the complete app for your Mac from [Releases](https://github.com/Delita
 
 | Download | Architecture | Validation |
 | --- | --- | --- |
-| `GSE-SMART-IPTV-4.4-compat-1.0.0-arm64.zip` | Apple Silicon only | Native tests and live macOS 27 playlist/EPG checks |
-| `GSE-SMART-IPTV-4.4-compat-1.0.0-x86_64.zip` | Intel only | x86_64 tests under Rosetta; physical Intel Mac testing pending |
+| `GSE-SMART-IPTV-4.4-compat-1.1.0-arm64.zip` | Apple Silicon only | Native tests and live macOS 27 playlist/EPG checks |
+| `GSE-SMART-IPTV-4.4-compat-1.1.0-x86_64.zip` | Intel only | x86_64 tests and receipt-free UI checks under Rosetta; physical Intel Mac testing pending |
 
-**Requires your own existing GSE App Store installation and receipt.** No receipt is distributed. GSE 4.4 uses the obsolete `exit(173)` receipt-refresh flow, which fails on macOS 27; preserve your own receipt before replacing the app. The commands below keep it locally and never upload it:
-
-```sh
-# After unzipping the correct architecture into Downloads, with GSE quit:
-cp -R "/Applications/GSE SMART IPTV.app/Contents/_MASReceipt" \
-  "$HOME/Downloads/GSE SMART IPTV.app/Contents/_MASReceipt"
-```
-
-Then back up your old app and move the downloaded app to Applications. Do not distribute or share your receipt. A fresh installation without an existing valid receipt has not been validated.
+**No Apple receipt, App Store installation or Apple account is required to launch these direct-distribution builds.** The legacy receipt startup wrapper and delayed receipt verifier are omitted. No receipt is bundled or generated.
 
 Both downloads contain an app named `GSE SMART IPTV.app`. Quit GSE, retain a backup of your current app, unzip the appropriate download, and copy the app to Applications. Keep only one copy running. The bundle identifier is unchanged so the app can reuse an existing GSE profile. macOS may ask permission to access its existing app data after the local signature changes.
 
-These builds are locally signed, not Developer ID notarized. If macOS requires approval, use its normal per-app approval controls. No system-wide security change is required. No playlists, accounts, preferences or EPG databases are bundled in either download. App Store receipts, extended attributes, vendor sample playlists are removed. The required vendor logo mapping contains only PNG image links and is retained. Existing local user data is preserved; sample-import actions have no bundled samples to load.
+These builds are locally signed, not Developer ID notarized. If macOS requires approval, use its normal per-app approval controls. No system-wide security change is required. No playlists, accounts, preferences or EPG databases are bundled in either download. App Store receipts, extended attributes and vendor sample playlists are removed. The required vendor logo mapping contains only PNG image links and is retained. Existing local user data is preserved; sample-import actions have no bundled samples to load.
 
 The app retains its sandbox and the original selected-file, Movies and network permissions. The compatibility code neither reads nor uploads account data. The original application's network behavior and bundled services are otherwise unchanged.
 
@@ -31,16 +23,18 @@ The app retains its sandbox and the original selected-file, Movies and network p
 
 - Assign the existing table delegate as the target for `doubleClickedRow:` when the target is missing and the delegate implements the action. Explicit targets and other actions are unchanged.
 - At the one identified EPG completion call site, ignore removal of index zero when its queue is already empty. Other array errors still raise their normal exceptions.
-- The shim activates only for the documented binary UUID of each supported architecture. It adds one library load command; it does not rewrite the original application's machine instructions or licensing logic.
+- The shim activates only for the documented binary UUID of each supported architecture. It adds one library load command and selects the existing `NSApplicationMain` import stub as the entry point. It does not rewrite original machine instructions.
 
 The EPG change contains the reported crash. It does not replace the application's asynchronous update design or guarantee that every unrelated crash is fixed.
 
+- Direct-distribution startup avoids the removed `exit(173)` receipt-refresh API. The exact `AppDelegate.strategicPlace1` implementation is replaced with a no-op so its delayed App Store verifier is not queued. Both changes apply only to the fingerprinted builds.
+
 ## Validation
 
-- 9 native behavior tests per architecture, including actual Objective-C message dispatch at a controlled native return address.
-- 6 Mach-O patcher tests: both architectures, preservation of section contents, architecture mismatch, header bounds, and unused-header-space checks.
+- 15 native behavior tests per architecture, including actual Objective-C message dispatch at a controlled native return address.
+- 10 Mach-O patcher tests: both architectures, section preservation, architecture/header validation, and guarded selection of the direct AppKit entry point.
 - Apple Silicon live checks: existing profile, playlist download, channel-group navigation, EPG import and populated program timeline.
-- Intel behavior tests run through Rosetta on Apple Silicon. A physical Intel Mac and a prolonged playback/stability run have not been tested.
+- Intel behavior tests and receipt-free launch/navigation checks run through Rosetta on Apple Silicon. A physical Intel Mac and a prolonged playback/stability run have not been tested.
 
 ## Build from an authorized local copy
 

@@ -8,7 +8,7 @@ from pathlib import Path
 from patch_binary import patch
 
 ROOT = Path(__file__).resolve().parent
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 
 
 def run(*args):
