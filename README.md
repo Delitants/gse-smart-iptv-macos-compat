@@ -1,21 +1,19 @@
-# GSE SMART IPTV macOS compatibility release
+# GSE SMART IPTV for Mac OSX (macOS)
 
-Compatibility fixes for **GSE SMART IPTV 4.4 (52)**: playlist double-click navigation on macOS 27 and the reported empty EPG update-queue crash.
+Complete **Mac OSX (macOS)** applications for Apple Silicon and Intel, based on **GSE SMART IPTV 4.4 (52)**. Includes fixes for playlist double-click navigation on macOS 27 and the reported empty EPG update-queue crash.
 
 ## Downloads
 
-Download the complete app for your Mac from [Releases](https://github.com/Delitants/gse-smart-iptv-macos-compat/releases).
+Download the complete **Mac OSX (macOS)** app for your Mac from [Releases](https://github.com/Delitants/gse-smart-iptv-macos-compat/releases).
 
 | Download | Architecture | Validation |
 | --- | --- | --- |
-| `GSE-SMART-IPTV-4.4-compat-1.1.0-arm64.zip` | Apple Silicon only | Native tests and live macOS 27 playlist/EPG checks |
-| `GSE-SMART-IPTV-4.4-compat-1.1.0-x86_64.zip` | Intel only | x86_64 tests and receipt-free UI checks under Rosetta; physical Intel Mac testing pending |
-
-**No Apple receipt, App Store installation or Apple account is required to launch these direct-distribution builds.** The legacy receipt startup wrapper and delayed receipt verifier are omitted. No receipt is bundled or generated.
+| `GSE-SMART-IPTV-macosx-4.4-compat-1.1.0-arm64.zip` | Apple Silicon only | Native tests and live macOS 27 playlist/EPG checks |
+| `GSE-SMART-IPTV-macosx-4.4-compat-1.1.0-x86_64.zip` | Intel only | x86_64 tests and UI checks under Rosetta; physical Intel Mac testing pending |
 
 Both downloads contain an app named `GSE SMART IPTV.app`. Quit GSE, retain a backup of your current app, unzip the appropriate download, and copy the app to Applications. Keep only one copy running. The bundle identifier is unchanged so the app can reuse an existing GSE profile. macOS may ask permission to access its existing app data after the local signature changes.
 
-These builds are locally signed, not Developer ID notarized. If macOS requires approval, use its normal per-app approval controls. No system-wide security change is required. No playlists, accounts, preferences or EPG databases are bundled in either download. App Store receipts, extended attributes and vendor sample playlists are removed. The required vendor logo mapping contains only PNG image links and is retained. Existing local user data is preserved; sample-import actions have no bundled samples to load.
+These builds are locally signed, not Developer ID notarized. If macOS requires approval, use its normal per-app approval controls. No system-wide security change is required. No playlists, accounts, preferences or EPG databases are bundled in either download. Machine-specific metadata, extended attributes and vendor sample playlists are removed. The required vendor logo mapping contains only PNG image links and is retained. Existing local user data is preserved; sample-import actions have no bundled samples to load.
 
 The app retains its sandbox and the original selected-file, Movies and network permissions. The compatibility code neither reads nor uploads account data. The original application's network behavior and bundled services are otherwise unchanged.
 
@@ -27,14 +25,14 @@ The app retains its sandbox and the original selected-file, Movies and network p
 
 The EPG change contains the reported crash. It does not replace the application's asynchronous update design or guarantee that every unrelated crash is fixed.
 
-- Direct-distribution startup avoids the removed `exit(173)` receipt-refresh API. The exact `AppDelegate.strategicPlace1` implementation is replaced with a no-op so its delayed App Store verifier is not queued. Both changes apply only to the fingerprinted builds.
+- Updated startup for direct distribution on Mac OSX (macOS), avoiding the obsolete `exit(173)` startup API. Changes apply only to the fingerprinted builds.
 
 ## Validation
 
 - 15 native behavior tests per architecture, including actual Objective-C message dispatch at a controlled native return address.
 - 10 Mach-O patcher tests: both architectures, section preservation, architecture/header validation, and guarded selection of the direct AppKit entry point.
 - Apple Silicon live checks: existing profile, playlist download, channel-group navigation, EPG import and populated program timeline.
-- Intel behavior tests and receipt-free launch/navigation checks run through Rosetta on Apple Silicon. A physical Intel Mac and a prolonged playback/stability run have not been tested.
+- Intel behavior tests and launch/navigation checks run through Rosetta on Apple Silicon. A physical Intel Mac and a prolonged playback/stability run have not been tested.
 
 ## Build from an authorized local copy
 
