@@ -1,0 +1,7 @@
+build/
+*.app/
+*.zip
+*.dylib
+__pycache__/
+.DS_Store
+*.log
