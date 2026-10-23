@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "repository": "Delitants/gse-smart-iptv-macos-compat",
+  "baseline": "286a30f5fe2846efa28539968a76956fae6d02ab",
+  "public_docs": [],
+  "public_data": [],
+  "release_assets": [
+    "GSE-SMART-IPTV-macosx-4.4-compat-*-arm64.zip",
+    "GSE-SMART-IPTV-macosx-4.4-compat-*-x86_64.zip",
+    "SHA256SUMS"
+  ]
+}
